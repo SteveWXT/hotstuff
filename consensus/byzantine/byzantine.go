@@ -10,6 +10,7 @@ import (
 func init() {
 	modules.RegisterModule("silence", func() Byzantine { return &silence{} })
 	modules.RegisterModule("fork", func() Byzantine { return &fork{} })
+	modules.RegisterModule("crash", func() Byzantine { return &crash{} })
 }
 
 // Byzantine wraps a consensus rules implementation and alters its behavior.
@@ -95,4 +96,32 @@ func NewFork(rules consensus.Rules) consensus.Rules {
 func (f *fork) Wrap(rules consensus.Rules) consensus.Rules {
 	f.Rules = rules
 	return f
+}
+
+type crash struct {
+	consensus.Rules
+}
+
+func (c *crash) InitModule(mods *modules.Core) {
+	if mod, ok := c.Rules.(modules.Module); ok {
+		mod.InitModule(mods)
+	}
+}
+
+func (c *crash) ProposeRule(_ hotstuff.SyncInfo, _ hotstuff.Command) (hotstuff.ProposeMsg, bool) {
+	return hotstuff.ProposeMsg{}, false
+}
+
+func (c *crash) VoteRule(proposal hotstuff.ProposeMsg) bool {
+	return false
+}
+
+func (c *crash) Wrap(rules consensus.Rules) consensus.Rules {
+	c.Rules = rules
+	return c
+}
+
+// NewCrash returns a byzantine replica that will never propose or crash.
+func NewCrash(c consensus.Rules) consensus.Rules {
+	return &crash{Rules: c}
 }

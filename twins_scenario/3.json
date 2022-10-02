@@ -1,0 +1,12 @@
+{
+	"num_nodes": 4,
+	"num_twins": 1,
+	"partitions": 2,
+	"views": 7,
+	"ticks": 150,
+	"shuffle": false,
+	"seed": 0,
+	"scenarios": [
+		[{"leader":2,"partitions":[[1,2,3,4,5],[]]},{"leader":2,"partitions":[[1,2,3,4,5],[]]},{"leader":2,"partitions":[[1,2,3,4,5],[]]},{"leader":2,"partitions":[[1,2,3,4,5],[]]},{"leader":2,"partitions":[[1,2,3,4,5],[]]},{"leader":2,"partitions":[[1,2,3,4,5],[]]},{"leader":2,"partitions":[[1,2,3,4],[5]]}]
+	]
+}

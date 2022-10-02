@@ -1,0 +1,8 @@
+scenarios-per-file = 1
+output = "/home/wxt/src/GOPATH/src/hotstuff/twins_scenario/"
+scenarios = 10
+replicas = 4
+twins = 1
+partitions = 2
+views = 10
+concurrency = 0

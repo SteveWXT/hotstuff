@@ -1,0 +1,12 @@
+clients = 20
+client-timeout = "5s"
+replicas = 4
+duration = "60s"
+timeout-multiplier = 2
+rate-step = 10
+batch-size = 8
+metrics = ["client-latency", "throughput"]
+measurement-interval = "60s"
+output = "./measurement"
+# leader-rotation = "carousel"
+log-level = "debug"
