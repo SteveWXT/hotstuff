@@ -21,7 +21,7 @@ type cwa struct {
 	opts           *modules.Options
 	logger         logging.Logger
 	blockChain     modules.BlockChain
-	prevCommitHead *hotstuff.Block
+	calculatedHead *hotstuff.Block
 	reputations    repMap // latest reputations
 }
 
@@ -65,7 +65,7 @@ var (
 	proposeRep = 10.0
 	voteRep    = 5.0
 	decayPara  = 0.5
-	delayPara  = 1
+	delayPara  = 5
 )
 
 // InitModule gives the module a reference to the Core object.
@@ -82,21 +82,29 @@ func (c *cwa) InitModule(mods *modules.Core) {
 
 // GetLeader returns the id of the leader in the given view
 func (c *cwa) GetLeader(view hotstuff.View) hotstuff.ID {
-	block := c.consensus.CommittedBlock()
+	recentCommit := c.consensus.CommittedBlock()
+	refView := view - hotstuff.View(c.consensus.ChainLength()+delayPara)
 
 	numReplicas := c.configuration.Len()
+
+	if recentCommit.View() < refView {
+		c.logger.Debugf("fallback to round-robin (view: %d, recent committed block: %d, but want ref view: %d)", view, recentCommit.View(), refView)
+		return chooseRoundRobin(view, numReplicas)
+	}
+
+	// looking for reference block
+	refBlock := recentCommit
+	for refBlock.View() > refView && refBlock != hotstuff.GetGenesis() {
+		refBlock, _ = c.blockChain.Get(refBlock.Parent())
+	}
+
 	// use round-robin for the first few views until we get a signature
-	if block.QuorumCert().Signature() == nil {
+	if refBlock.QuorumCert().Signature() == nil {
 		c.logger.Debug("in startup; using round-robin")
 		return chooseRoundRobin(view, numReplicas)
 	}
 
-	if block.View() != view-hotstuff.View(c.consensus.ChainLength()+delayPara) {
-		c.logger.Debugf("fallback to round-robin (view: %d, recent committed block: %d)", view, block.View())
-		return chooseRoundRobin(view, numReplicas)
-	}
-
-	c.logger.Debugf("proceeding with CWA (looking leader of view: %d, recent committed block view: %d)", view, block.View())
+	c.logger.Debugf("proceeding with CWA (looking leader of view: %d, recent committed block: %d, ref block view: %d)", view, recentCommit.View(), refBlock.View())
 
 	var (
 		f             = hotstuff.NumFaulty(c.configuration.Len())
@@ -108,14 +116,14 @@ func (c *cwa) GetLeader(view hotstuff.View) hotstuff.ID {
 	)
 
 	// add reputations to proposer and voters of uncalculated blocks
-	if c.prevCommitHead.View() < block.View() {
+	if c.calculatedHead.View() < refBlock.View() {
 
 		var (
-			ptr = block
+			ptr = refBlock
 			stk = NewStack()
 		)
 
-		for ptr != c.prevCommitHead {
+		for ptr != c.calculatedHead {
 			stk.Push(ptr)
 			ptr, _ = c.blockChain.Get(ptr.Parent())
 		}
@@ -150,7 +158,7 @@ func (c *cwa) GetLeader(view hotstuff.View) hotstuff.ID {
 			}
 		}
 
-		c.prevCommitHead = block
+		c.calculatedHead = refBlock
 	}
 
 	// debug info
@@ -159,15 +167,16 @@ func (c *cwa) GetLeader(view hotstuff.View) hotstuff.ID {
 	}
 
 	// get candidates of the next leader
-	lastBlockVoters := block.QuorumCert().Signature().Participants()
+	refBlockVoters := refBlock.QuorumCert().Signature().Participants()
+	ptr := refBlock
 
-	for ok && i < f && block != hotstuff.GetGenesis() {
-		lastProposers.Add(block.Proposer())
-		block, ok = c.blockChain.Get(block.Parent())
+	for ok && i < f && ptr != hotstuff.GetGenesis() {
+		lastProposers.Add(ptr.Proposer())
+		ptr, ok = c.blockChain.Get(ptr.Parent())
 		i++
 	}
 
-	lastBlockVoters.ForEach(func(id hotstuff.ID) {
+	refBlockVoters.ForEach(func(id hotstuff.ID) {
 		if !lastProposers.Contains(id) {
 			candidates = append(candidates, id)
 		}
@@ -190,7 +199,7 @@ func (c *cwa) GetLeader(view hotstuff.View) hotstuff.ID {
 // NewRepBased returns a new random reputation-based leader rotation implementation
 func NewCWA() modules.LeaderRotation {
 	return &cwa{
-		prevCommitHead: hotstuff.GetGenesis(),
+		calculatedHead: hotstuff.GetGenesis(),
 		reputations:    make(repMap),
 	}
 }

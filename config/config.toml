@@ -1,12 +1,13 @@
 clients = 20
 client-timeout = "5s"
 replicas = 4
-duration = "60s"
+duration = "120s"
 timeout-multiplier = 2
 rate-step = 10
 batch-size = 8
 metrics = ["client-latency", "throughput"]
-measurement-interval = "60s"
+measurement-interval = "120s"
 output = "./measurement"
-# leader-rotation = "carousel"
+# leader-rotation = "CWA"
+byzantine = ["crash:1"]
 log-level = "debug"
