@@ -39,3 +39,9 @@ message ViewTimeouts {
   // Number of view timeouts.
   uint64 Timeouts = 3;
 }
+
+message ReadMeasurement {
+  Event Event = 1;
+  uint64 Count = 2;
+  google.protobuf.Duration Duration = 3;
+}

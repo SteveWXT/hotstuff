@@ -106,8 +106,9 @@ func New(conf Config, builder modules.Builder) (replica *Replica) {
 
 		modules.ExtendedExecutor(srv.clientSrv),
 		modules.ExtendedForkHandler(srv.clientSrv),
+		srv.clientSrv,
 		srv.clientSrv.cmdCache,
-		srv.clientSrv.cmdCache,
+		srv.clientSrv.pbsrv,
 	)
 	srv.hs = builder.Build()
 
@@ -120,9 +121,9 @@ func (srv *Replica) Modules() *modules.Core {
 }
 
 // StartServers starts the client and replica servers.
-func (srv *Replica) StartServers(replicaListen, clientListen net.Listener) {
+func (srv *Replica) StartServers(replicaListen, clientListen net.Listener, pubsubListen net.Listener) {
 	srv.hsSrv.StartOnListener(replicaListen)
-	srv.clientSrv.StartOnListener(clientListen)
+	srv.clientSrv.StartOnListener(clientListen, pubsubListen)
 }
 
 // Connect connects to the other replicas.

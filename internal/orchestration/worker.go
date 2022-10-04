@@ -130,8 +130,12 @@ func (w *Worker) createReplicas(req *orchestrationpb.CreateReplicaRequest) (*orc
 		if err != nil {
 			return nil, err
 		}
+		pubsubListener, err := net.Listen("tcp", ":0")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create listener: %w", err)
+		}
 
-		r.StartServers(replicaListener, clientListener)
+		r.StartServers(replicaListener, clientListener, pubsubListener)
 		w.replicas[hotstuff.ID(cfg.GetID())] = r
 
 		resp.Replicas[cfg.GetID()] = &orchestrationpb.ReplicaInfo{

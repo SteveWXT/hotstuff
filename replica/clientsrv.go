@@ -13,6 +13,7 @@ import (
 	"github.com/relab/hotstuff/internal/proto/clientpb"
 	"github.com/relab/hotstuff/logging"
 	"github.com/relab/hotstuff/modules"
+	"github.com/relab/hotstuff/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -29,6 +30,8 @@ type clientSrv struct {
 	awaitingCmds map[cmdID]chan<- error
 	cmdCache     *cmdCache
 	hash         hash.Hash
+
+	pbsrv *pubsub.PubSubServer
 }
 
 // newClientServer returns a new client server.
@@ -38,6 +41,7 @@ func newClientServer(conf Config, srvOpts []gorums.ServerOption) (srv *clientSrv
 		srv:          gorums.NewServer(srvOpts...),
 		cmdCache:     newCmdCache(int(conf.BatchSize)),
 		hash:         sha256.New(),
+		pbsrv:        pubsub.NewServer(),
 	}
 	clientpb.RegisterClientServer(srv.srv, srv)
 	return srv
@@ -50,6 +54,7 @@ func (srv *clientSrv) InitModule(mods *modules.Core) {
 		&srv.logger,
 	)
 	srv.cmdCache.InitModule(mods)
+	srv.pbsrv.InitModule(mods)
 }
 
 func (srv *clientSrv) Start(addr string) error {
@@ -57,16 +62,27 @@ func (srv *clientSrv) Start(addr string) error {
 	if err != nil {
 		return err
 	}
-	srv.StartOnListener(lis)
+
+	pblis, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	srv.StartOnListener(lis, pblis)
 	return nil
 }
 
-func (srv *clientSrv) StartOnListener(lis net.Listener) {
+func (srv *clientSrv) StartOnListener(lis net.Listener, pblis net.Listener) {
 	go func() {
 		err := srv.srv.Serve(lis)
 		if err != nil {
 			srv.logger.Error(err)
 		}
+	}()
+
+	go func() {
+		//start pubsub module
+		srv.pbsrv.Start(pblis)
 	}()
 }
 
@@ -100,6 +116,10 @@ func (srv *clientSrv) Exec(cmd hotstuff.Command) {
 
 	for _, cmd := range batch.GetCommands() {
 		_, _ = srv.hash.Write(cmd.Data)
+
+		// relay the cmd to the pubsub module
+		go srv.pbsrv.HandleMsg(cmd.Data)
+
 		srv.mut.Lock()
 		id := cmdID{cmd.GetClientID(), cmd.GetSequenceNumber()}
 		if done, ok := srv.awaitingCmds[id]; ok {
