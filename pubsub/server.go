@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"net"
+	"time"
 
 	"github.com/SteveWXT/pubsub/clients"
 	"github.com/SteveWXT/pubsub/server"
@@ -29,6 +30,7 @@ func NewServer() *PubSubServer {
 	return pbsrv
 }
 
+// Start start pubsub server and start a specific number of clients
 func (pbsrv *PubSubServer) Start(ls net.Listener) {
 	go server.StartWithLS(ls)
 
@@ -46,8 +48,15 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 	pbsrv.pbclients.RunPubSubClients(ls.Addr().String(), 5)
 }
 
+// HandleMsg send messages to the pubsub server by using the connector
 func (pbsrv *PubSubServer) HandleMsg(data []byte) {
-	temp := "hello"
-	pbsrv.logger.Debugf("PubSub connector start to handle msg: %s", temp)
-	pbsrv.connector.Publish([]string{"topic"}, temp)
+	mockData := "hello"
+	pbsrv.logger.Debugf("PubSub connector start to handle msg: %s", mockData)
+	mockSSE()
+	pbsrv.connector.Publish([]string{"topic"}, mockData)
+}
+
+// mockSSE simulate the SSE matching time for testing
+func mockSSE() {
+	time.Sleep(time.Millisecond * 3)
 }
