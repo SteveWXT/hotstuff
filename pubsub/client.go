@@ -38,11 +38,13 @@ func (c *PubSubClients) RunPubSubClients(host string, n int) {
 func (c *PubSubClients) addSubscriber(host string) {
 	client, err := clients.New(host)
 	if err != nil {
-		c.logger.Fatalf("add subscriber error: %s", err)
+		c.logger.Fatalf("add subscriber error: %v", err)
 	}
 
 	c.conns = append(c.conns, client)
 	client.Subscribe([]string{"topic"})
+
+	c.logger.Info("A subscriber started at %v", host)
 
 	ch := client.Messages()
 

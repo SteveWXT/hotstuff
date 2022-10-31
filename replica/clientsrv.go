@@ -63,16 +63,11 @@ func (srv *clientSrv) Start(addr string) error {
 		return err
 	}
 
-	pblis, err := net.Listen("tcp", addr)
-	if err != nil {
-		return err
-	}
-
-	srv.StartOnListener(lis, pblis)
+	srv.StartOnListener(lis)
 	return nil
 }
 
-func (srv *clientSrv) StartOnListener(lis net.Listener, pblis net.Listener) {
+func (srv *clientSrv) StartOnListener(lis net.Listener) {
 	go func() {
 		err := srv.srv.Serve(lis)
 		if err != nil {
@@ -81,6 +76,11 @@ func (srv *clientSrv) StartOnListener(lis net.Listener, pblis net.Listener) {
 	}()
 
 	go func() {
+		// 添加pubsub专用listener
+		pblis, err := net.Listen("tcp", ":0")
+		if err != nil {
+			srv.logger.Error(err)
+		}
 		//start pubsub module
 		srv.pbsrv.Start(pblis)
 	}()

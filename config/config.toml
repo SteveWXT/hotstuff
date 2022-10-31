@@ -1,14 +1,13 @@
-clients = 20
-client-timeout = "5s"
+clients = 10
 replicas = 4
 payload-size = 5
-duration = "30s"
-timeout-multiplier = 2
-rate-step = 10
-batch-size = 8
+duration = "10s"
 metrics = ["client-latency", "throughput","read-throughput"]
-measurement-interval = "30s"
+measurement-interval = "10s"
 output = "./measurement"
-# leader-rotation = "CWA"
-# byzantine = ["crash:1"]
+# hosts = ["hs01",]
 # log-level = "debug"
+
+# [[hosts-config]]
+# name = "hs01"
+# internal-address = "172.21.160.130"

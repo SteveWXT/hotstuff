@@ -121,9 +121,9 @@ func (srv *Replica) Modules() *modules.Core {
 }
 
 // StartServers starts the client and replica servers.
-func (srv *Replica) StartServers(replicaListen, clientListen net.Listener, pubsubListen net.Listener) {
+func (srv *Replica) StartServers(replicaListen, clientListen net.Listener) {
 	srv.hsSrv.StartOnListener(replicaListen)
-	srv.clientSrv.StartOnListener(clientListen, pubsubListen)
+	srv.clientSrv.StartOnListener(clientListen)
 }
 
 // Connect connects to the other replicas.
