@@ -156,8 +156,15 @@ func (e *Experiment) createReplicas() (cfg *orchestrationpb.ReplicaConfiguration
 			opts.CertificateKey = keyChain.CertificateKey
 			req.Replicas[opts.ID] = opts
 		}
+
+		// test log
+		e.Logger.Infof("generagte ca and keys for %v success", host)
+
 		wcfg, err := worker.CreateReplica(req)
 		if err != nil {
+			// test log
+			e.Logger.Infof("worker: CreateReplica for %v success", host)
+
 			return nil, err
 		}
 
@@ -172,6 +179,10 @@ func (e *Experiment) createReplicas() (cfg *orchestrationpb.ReplicaConfiguration
 		}
 	}
 
+	// test log
+	if err == nil {
+		e.Logger.Info("createReplicas success")
+	}
 	return cfg, nil
 }
 
@@ -284,6 +295,10 @@ func (e *Experiment) assignReplicasAndClients() (err error) {
 		}
 	}
 
+	// test log
+	if err == nil {
+		e.Logger.Info("assignReplicasAndClients success")
+	}
 	// TODO: warn if not all clients/replicas were assigned
 	return nil
 }
@@ -328,6 +343,11 @@ func (e *Experiment) startReplicas(cfg *orchestrationpb.ReplicaConfiguration) (e
 	for range e.Hosts {
 		err = multierr.Append(err, <-errors)
 	}
+
+	// test log
+	if err == nil {
+		e.Logger.Info("startReplicas success")
+	}
 	return err
 }
 
@@ -371,6 +391,10 @@ func (e *Experiment) startClients(cfg *orchestrationpb.ReplicaConfiguration) err
 			return err
 		}
 	}
+
+
+	e.Logger.Info("startClients success")
+
 	return nil
 }
 

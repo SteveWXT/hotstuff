@@ -44,7 +44,7 @@ func (w RemoteWorker) rpc(req proto.Message) (res proto.Message, err error) {
 // returning details about the created replicas.
 func (w RemoteWorker) CreateReplica(req *orchestrationpb.CreateReplicaRequest) (res *orchestrationpb.CreateReplicaResponse, err error) {
 	msg, err := w.rpc(req)
-	if err != nil {
+	if err != nil{
 		return nil, err
 	}
 	res, ok := msg.(*orchestrationpb.CreateReplicaResponse)

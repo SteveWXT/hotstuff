@@ -47,14 +47,27 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 	// add subscribers
 	n := 5
 	pbsrv.pbclients.RunPubSubClients(ls.Addr().String(), n)
+	pbsrv.logger.Infof("Started %v PubSub mock subscribers", n)
 }
 
 // HandleMsg send messages to the pubsub server by using the connector
 func (pbsrv *PubSubServer) HandleMsg(data []byte) {
-	mockData := "hello"
-	pbsrv.logger.Debugf("PubSub connector start to handle msg: %v", mockData)
+
+	if pbsrv.ls == nil {
+		pblis, err := net.Listen("tcp", ":0")
+		if err != nil {
+			pbsrv.logger.Error(err)
+		}
+		pbsrv.Start(pblis)
+	}
+
+	dataStr := "hello"
+	pbsrv.logger.Debugf("PubSub connector start to handle msg: %v", dataStr)
 	mockSSE()
-	pbsrv.connector.Publish([]string{"topic"}, mockData)
+	err := pbsrv.connector.Publish([]string{"topic"}, dataStr)
+	if err != nil {
+		pbsrv.logger.Fatalf("Connector publish error: %v", err)
+	}
 }
 
 // mockSSE simulate the SSE matching time for testing

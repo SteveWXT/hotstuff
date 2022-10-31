@@ -30,7 +30,7 @@ func NewPubSubClients() *PubSubClients {
 // RunPubSubClients start a specific number of clients
 func (c *PubSubClients) RunPubSubClients(host string, n int) {
 	for i := 0; i < n; i++ {
-		go c.addSubscriber(host)
+		c.addSubscriber(host)
 	}
 }
 
@@ -46,13 +46,15 @@ func (c *PubSubClients) addSubscriber(host string) {
 
 	c.logger.Info("A subscriber started at %v", host)
 
-	ch := client.Messages()
+	go c.processMsg(client)
+}
 
+func (c *PubSubClients) processMsg(client *clients.TCP) {
+	ch := client.Messages()
 	for msg := range ch {
 		c.fakeProcess(msg.Data)
 		c.eventLoop.AddEvent(ReadMeasurementEvent{})
 	}
-
 }
 
 // fakeProcess used to simulate the client process messages

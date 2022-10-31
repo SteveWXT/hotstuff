@@ -27,10 +27,7 @@ require (
 	google.golang.org/protobuf v1.28.0
 )
 
-// replace (
-// 	github.com/SteveWXT/hotstuff/pubsub => ./pubsub
-
-// )
+replace github.com/SteveWXT/hotstuff/pubsub => ./pubsub
 
 require (
 	git.sr.ht/~sbinet/gg v0.3.1 // indirect
