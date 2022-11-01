@@ -33,14 +33,19 @@ func NewServer() *PubSubServer {
 }
 
 // Start start pubsub server and start a specific number of clients
-func (pbsrv *PubSubServer) Start(ls net.Listener) {
-	go server.StartWithLS(ls)
+func (pbsrv *PubSubServer) Start() {
+	// 添加pubsub专用listener
+	pbsrv.ls, _ = net.Listen("tcp", ":0")
 
-	port, _ := server.GetPort(ls)
+	err := server.StartWithLS(pbsrv.ls)
+	if err != nil {
+		pbsrv.logger.DPanicf("PubSub server start error: %v", err)
+	}
+
+	port, _ := server.GetPort(pbsrv.ls)
 	pbsrv.logger.Infof("PubSub server listen on port: %d", port)
-	pbsrv.ls = ls
 
-	connector, err := clients.New(ls.Addr().String())
+	connector, err := clients.New(pbsrv.ls.Addr().String())
 	if err != nil {
 		pbsrv.logger.Fatalf("PubSub server connector start failed: %v", err)
 	}
@@ -48,21 +53,17 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 
 	// add subscribers
 	n := 2
-	pbsrv.pbclients.RunPubSubClients(ls.Addr().String(), n)
+	go pbsrv.pbclients.RunPubSubClients(pbsrv.ls.Addr().String(), n)
 	pbsrv.logger.Infof("Started %v PubSub mock subscribers", n)
 }
 
 // HandleMsg send messages to the pubsub server by using the connector
 func (pbsrv *PubSubServer) HandleMsg(data []byte) {
 	if pbsrv.ls == nil && pbsrv.isClose == false {
-		pblis, err := net.Listen("tcp", ":0")
-		if err != nil {
-			pbsrv.logger.Error(err)
-		}
-		pbsrv.Start(pblis)
+		pbsrv.Start()
 	}
 
-	if pbsrv.connector == nil {
+	if pbsrv.connector == nil && pbsrv.isClose == false {
 		pbsrv.connector, _ = clients.New(pbsrv.ls.Addr().String())
 	}
 

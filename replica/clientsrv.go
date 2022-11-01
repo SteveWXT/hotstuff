@@ -74,13 +74,9 @@ func (srv *clientSrv) StartOnListener(lis net.Listener) {
 			srv.logger.Error(err)
 		}
 
-		// 添加pubsub专用listener
-		pblis, err := net.Listen("tcp", ":0")
-		if err != nil {
-			srv.logger.Error(err)
-		}
+		
 		//start pubsub module
-		srv.pbsrv.Start(pblis)
+		srv.pbsrv.Start()
 	}()
 }
 
@@ -117,7 +113,7 @@ func (srv *clientSrv) Exec(cmd hotstuff.Command) {
 		_, _ = srv.hash.Write(cmd.Data)
 
 		// relay the cmd to the pubsub module
-		// go srv.pbsrv.HandleMsg(cmd.Data)
+		go srv.pbsrv.HandleMsg(cmd.Data)
 
 		srv.mut.Lock()
 		id := cmdID{cmd.GetClientID(), cmd.GetSequenceNumber()}

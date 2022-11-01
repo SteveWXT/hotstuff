@@ -1,14 +1,14 @@
 replicas = 4
 clients = 4
 client-timeout = "5s"
-duration = "10s"
-batch-size = 16
+duration = "30s"
+batch-size = 8
 payload-size = 5
 metrics = ["client-latency", "throughput","read-throughput"]
-measurement-interval = "10s"
+measurement-interval = "30s"
 output = "./measurement"
 hosts = ["hs01",]
-log-level = "debug"
+# log-level = "debug"
 
 [[hosts-config]]
 name = "hs01"

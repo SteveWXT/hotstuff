@@ -112,6 +112,7 @@ func (e *Experiment) Run() (err error) {
 	if err != nil {
 		return fmt.Errorf("failed to stop replicas: %w", err)
 	}
+	e.Logger.Info("End Stopping replicas...")
 
 	return nil
 }
