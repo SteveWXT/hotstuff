@@ -173,6 +173,7 @@ func (c *Client) Run(ctx context.Context) {
 	)
 	<-eventLoopDone
 	close(c.done)
+	c.logger.Info("Client: End Run")
 }
 
 // Start starts the client.
@@ -184,8 +185,10 @@ func (c *Client) Start() {
 
 // Stop stops the client.
 func (c *Client) Stop() {
+	c.logger.Info("Client: Begin to Stop")
 	c.cancel()
 	<-c.done
+	c.logger.Info("Client: End Stop")
 }
 
 func (c *Client) close() {

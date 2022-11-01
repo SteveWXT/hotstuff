@@ -1,10 +1,11 @@
 replicas = 4
-clients = 20
-duration = "3s"
+clients = 4
+client-timeout = "5s"
+duration = "10s"
 batch-size = 16
 payload-size = 5
 metrics = ["client-latency", "throughput","read-throughput"]
-measurement-interval = "3s"
+measurement-interval = "10s"
 output = "./measurement"
 hosts = ["hs01",]
 log-level = "debug"

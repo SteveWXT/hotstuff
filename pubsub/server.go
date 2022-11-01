@@ -15,6 +15,7 @@ type PubSubServer struct {
 	logger    logging.Logger
 	connector *clients.TCP
 	pbclients *PubSubClients
+	isClose   bool
 }
 
 func (pbsrv *PubSubServer) InitModule(mods *modules.Core) {
@@ -25,6 +26,7 @@ func (pbsrv *PubSubServer) InitModule(mods *modules.Core) {
 func NewServer() *PubSubServer {
 	pbsrv := &PubSubServer{
 		pbclients: NewPubSubClients(),
+		isClose:   false,
 	}
 
 	return pbsrv
@@ -45,20 +47,23 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 	pbsrv.connector = connector
 
 	// add subscribers
-	n := 5
+	n := 2
 	pbsrv.pbclients.RunPubSubClients(ls.Addr().String(), n)
 	pbsrv.logger.Infof("Started %v PubSub mock subscribers", n)
 }
 
 // HandleMsg send messages to the pubsub server by using the connector
 func (pbsrv *PubSubServer) HandleMsg(data []byte) {
-
-	if pbsrv.ls == nil {
+	if pbsrv.ls == nil && pbsrv.isClose == false {
 		pblis, err := net.Listen("tcp", ":0")
 		if err != nil {
 			pbsrv.logger.Error(err)
 		}
 		pbsrv.Start(pblis)
+	}
+
+	if pbsrv.connector == nil {
+		pbsrv.connector, _ = clients.New(pbsrv.ls.Addr().String())
 	}
 
 	dataStr := "hello"
@@ -68,6 +73,19 @@ func (pbsrv *PubSubServer) HandleMsg(data []byte) {
 	if err != nil {
 		pbsrv.logger.Fatalf("Connector publish error: %v", err)
 	}
+}
+
+func (pbsrv *PubSubServer) Close() {
+	pbsrv.logger.Info("PubSub: Begin Close")
+	pbsrv.isClose = true
+	if pbsrv.ls != nil {
+		pbsrv.ls.Close()
+	}
+	if pbsrv.connector != nil {
+		pbsrv.connector.Close()
+	}
+	pbsrv.pbclients.Close()
+	pbsrv.logger.Info("PubSub: End Close")
 }
 
 // mockSSE simulate the SSE matching time for testing

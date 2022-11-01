@@ -86,6 +86,7 @@ func (srv *clientSrv) StartOnListener(lis net.Listener) {
 
 func (srv *clientSrv) Stop() {
 	srv.srv.Stop()
+	srv.pbsrv.Close()
 }
 
 func (srv *clientSrv) ExecCommand(ctx gorums.ServerCtx, cmd *clientpb.Command) (*emptypb.Empty, error) {
@@ -116,7 +117,7 @@ func (srv *clientSrv) Exec(cmd hotstuff.Command) {
 		_, _ = srv.hash.Write(cmd.Data)
 
 		// relay the cmd to the pubsub module
-		srv.pbsrv.HandleMsg(cmd.Data)
+		// go srv.pbsrv.HandleMsg(cmd.Data)
 
 		srv.mut.Lock()
 		id := cmdID{cmd.GetClientID(), cmd.GetSequenceNumber()}

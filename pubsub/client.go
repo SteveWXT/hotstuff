@@ -34,6 +34,12 @@ func (c *PubSubClients) RunPubSubClients(host string, n int) {
 	}
 }
 
+func (c *PubSubClients) Close() {
+	for _, conn := range c.conns {
+		conn.Close()
+	}
+}
+
 // addSubscriber start a client as subscriber
 func (c *PubSubClients) addSubscriber(host string) {
 	client, err := clients.New(host)

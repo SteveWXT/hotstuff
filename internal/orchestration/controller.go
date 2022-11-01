@@ -91,13 +91,16 @@ func (e *Experiment) Run() (err error) {
 		return fmt.Errorf("failed to start clients: %w", err)
 	}
 
+	e.Logger.Info("Begin Duration...")
 	time.Sleep(e.Duration)
+	e.Logger.Info("End Duration...")
 
 	e.Logger.Info("Stopping clients...")
 	err = e.stopClients()
 	if err != nil {
 		return fmt.Errorf("failed to stop clients: %w", err)
 	}
+	e.Logger.Info("End Stopping clients...")
 
 	wait := 5 * e.ReplicaOpts.GetInitialTimeout().AsDuration()
 	e.Logger.Infof("Waiting %s for replicas to finish.", wait)
@@ -391,7 +394,6 @@ func (e *Experiment) startClients(cfg *orchestrationpb.ReplicaConfiguration) err
 			return err
 		}
 	}
-
 
 	e.Logger.Info("startClients success")
 
