@@ -14,12 +14,11 @@ import (
 	"github.com/relab/hotstuff/internal/proto/clientpb"
 	"github.com/relab/hotstuff/logging"
 	"github.com/relab/hotstuff/modules"
+	"github.com/relab/hotstuff/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/SteveWXT/pubsub/clients"
 )
 
 // clientSrv serves a client.
@@ -33,7 +32,7 @@ type clientSrv struct {
 	cmdCache     *cmdCache
 	hash         hash.Hash
 
-	connector *clients.TCP
+	connector *pubsub.ClientConn
 	pbls      net.Listener
 }
 
@@ -74,9 +73,6 @@ func (srv *clientSrv) StartOnListener(lis net.Listener) {
 		if err != nil {
 			srv.logger.Error(err)
 		}
-
-		//start pubsub module
-		// srv.pbsrv.Start()
 	}()
 }
 
@@ -150,7 +146,7 @@ func (srv *clientSrv) Fork(cmd hotstuff.Command) {
 
 // AddConnector add a pubsub connector (client)
 func (srv *clientSrv) AddConnector(pbls net.Listener) {
-	connector, err := clients.New(pbls.Addr().String())
+	connector, err := pubsub.NewClient(pbls.Addr().String())
 	if err != nil {
 		srv.logger.Fatalf("PubSub server connector start failed: %v", err)
 	}

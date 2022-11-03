@@ -3,14 +3,13 @@ package pubsub
 import (
 	"context"
 
-	"github.com/SteveWXT/pubsub/clients"
 	"github.com/relab/hotstuff/eventloop"
 	"github.com/relab/hotstuff/logging"
 	"github.com/relab/hotstuff/modules"
 )
 
 type PubSubClients struct {
-	Conns     []*clients.TCP
+	Conns     []*ClientConn
 	Logger    logging.Logger
 	EventLoop *eventloop.EventLoop
 }
@@ -24,7 +23,7 @@ func (c *PubSubClients) InitModule(mods *modules.Core) {
 
 func NewPubSubClients() *PubSubClients {
 	pbclients := &PubSubClients{
-		Conns: make([]*clients.TCP, 0),
+		Conns: make([]*ClientConn, 0),
 	}
 	return pbclients
 }
@@ -46,7 +45,7 @@ func (c *PubSubClients) Close() {
 
 // addSubscriber start a client as subscriber
 func (c *PubSubClients) addSubscriber(host string, ctx context.Context) {
-	client, err := clients.New(host)
+	client, err := NewClient(host)
 	if err != nil {
 		c.Logger.Fatalf("add subscriber error: %v", err)
 	}

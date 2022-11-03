@@ -135,8 +135,8 @@ func (srv *Replica) StartServers(replicaListen, clientListen, pubsubListen net.L
 	logger := logging.New("replica")
 	logger.Info("Replica: begin start pbsrv")
 	srv.pbsrv.Start(pubsubListen)
-	logger.Info("Replica: end start pbsrv")
 	srv.clientSrv.pbls = pubsubListen
+	logger.Info("Replica: end start pbsrv")
 }
 
 // Connect connects to the other replicas.

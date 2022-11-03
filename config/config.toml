@@ -10,7 +10,7 @@ metrics = ["client-latency", "throughput","read-throughput"]
 measurement-interval = "30s"
 output = "./measurement"
 hosts = ["hs01","hs02",]
-log-level = "debug"
+# log-level = "debug"
 
 [[hosts-config]]
 name = "hs01"

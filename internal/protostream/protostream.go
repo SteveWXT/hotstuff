@@ -109,9 +109,7 @@ func (r *Reader) Read(dst proto.Message) error {
 	logger.Info("ProtoRedaer: Begin read message length")
 
 	var msgLenBuf [4]byte
-	n, err := io.ReadFull(r.src, msgLenBuf[:])
-
-	logger.Infof("ProtoRedaer: read message length: %d", n)
+	_, err := io.ReadFull(r.src, msgLenBuf[:])
 
 	if err != nil {
 		logger.Infof("ProtoRedaer: Read error: failed to read message length: %w", err)
@@ -126,7 +124,7 @@ func (r *Reader) Read(dst proto.Message) error {
 		return errors.New("protostream: message length is greater than 2 GiB")
 	}
 
-	logger.Info("ProtoRedaer: End process very big message length")
+	logger.Info("ProtoRedaer: End process message length: %d", msgLen)
 
 	buf := make([]byte, msgLen)
 	_, err = io.ReadFull(r.src, buf)
