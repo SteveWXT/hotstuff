@@ -8,7 +8,9 @@ import (
 	"net"
 
 	"github.com/relab/hotstuff/eventloop"
+	"github.com/relab/hotstuff/logging"
 	"github.com/relab/hotstuff/modules"
+	"github.com/relab/hotstuff/pubsub"
 
 	"github.com/relab/gorums"
 	"github.com/relab/hotstuff"
@@ -56,6 +58,8 @@ type Replica struct {
 	execHandlers map[cmdID]func(*emptypb.Empty, error)
 	cancel       context.CancelFunc
 	done         chan struct{}
+
+	pbsrv *pubsub.PubSubServer
 }
 
 // New returns a new replica.
@@ -69,12 +73,14 @@ func New(conf Config, builder modules.Builder) (replica *Replica) {
 	}
 
 	clientSrv := newClientServer(conf, clientSrvOpts)
+	pbsrv := pubsub.NewServer()
 
 	srv := &Replica{
 		clientSrv:    clientSrv,
 		execHandlers: make(map[cmdID]func(*emptypb.Empty, error)),
 		cancel:       func() {},
 		done:         make(chan struct{}),
+		pbsrv:        pbsrv,
 	}
 
 	replicaSrvOpts := conf.ReplicaServerOptions
@@ -108,7 +114,8 @@ func New(conf Config, builder modules.Builder) (replica *Replica) {
 		modules.ExtendedForkHandler(srv.clientSrv),
 		srv.clientSrv,
 		srv.clientSrv.cmdCache,
-		srv.clientSrv.pbsrv,
+		srv.pbsrv,
+		srv.pbsrv.Pbclients,
 	)
 	srv.hs = builder.Build()
 
@@ -121,9 +128,15 @@ func (srv *Replica) Modules() *modules.Core {
 }
 
 // StartServers starts the client and replica servers.
-func (srv *Replica) StartServers(replicaListen, clientListen net.Listener) {
+func (srv *Replica) StartServers(replicaListen, clientListen, pubsubListen net.Listener) {
 	srv.hsSrv.StartOnListener(replicaListen)
 	srv.clientSrv.StartOnListener(clientListen)
+
+	logger := logging.New("replica")
+	logger.Info("Replica: begin start pbsrv")
+	srv.pbsrv.Start(pubsubListen)
+	logger.Info("Replica: end start pbsrv")
+	srv.clientSrv.pbls = pubsubListen
 }
 
 // Connect connects to the other replicas.
@@ -165,6 +178,7 @@ func (srv *Replica) Close() {
 	srv.clientSrv.Stop()
 	srv.cfg.Close()
 	srv.hsSrv.Stop()
+	srv.pbsrv.Close()
 }
 
 // GetHash returns the hash of all executed commands.

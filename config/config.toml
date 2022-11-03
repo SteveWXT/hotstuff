@@ -1,15 +1,21 @@
 replicas = 4
-clients = 4
+clients = 20
 client-timeout = "5s"
+rate-step = 10
 duration = "30s"
+max-timeout = "5s"
 batch-size = 8
 payload-size = 5
 metrics = ["client-latency", "throughput","read-throughput"]
 measurement-interval = "30s"
 output = "./measurement"
-hosts = ["hs01",]
-# log-level = "debug"
+hosts = ["hs01","hs02",]
+log-level = "debug"
 
 [[hosts-config]]
 name = "hs01"
 internal-address = "172.21.160.130"
+
+[[hosts-config]]
+name = "hs02"
+internal-address = "172.21.160.133"

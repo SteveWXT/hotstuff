@@ -79,8 +79,8 @@ github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAE
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d/go.mod h1:HI8ITrYtUY+O+ZhtlqUnD8+KwNPOyugEhfP9fdUIaEQ=
-github.com/SteveWXT/pubsub v0.1.1 h1:Az5LFsbEk28jv6Ur5ByfwoFpDuU7gfpIdS0ZKNKygRU=
-github.com/SteveWXT/pubsub v0.1.1/go.mod h1:9HfiiWWrxwImh+ZH5Vwbj4dICLXZOJUQukNZM8yc+do=
+github.com/SteveWXT/pubsub v0.1.5 h1:b54hQk2Y61atWgT52f8QBNAbZUHeh2/AgEwDHii2BX4=
+github.com/SteveWXT/pubsub v0.1.5/go.mod h1:9HfiiWWrxwImh+ZH5Vwbj4dICLXZOJUQukNZM8yc+do=
 github.com/ajstarks/deck v0.0.0-20200831202436-30c9fc6549a9/go.mod h1:JynElWSGnm/4RlzPXRlREEwqTHAN3T56Bv2ITsFT3gY=
 github.com/ajstarks/deck/generate v0.0.0-20210309230005-c3f852c02e19/go.mod h1:T13YZdzov6OU0A1+RfKZiZN9ca6VeKdBdyDV+BY97Tk=
 github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b h1:slYM766cy2nI3BwyRiyQj/Ud48djTMtMebDqepE95rw=

@@ -5,6 +5,7 @@ import (
 
 	"github.com/relab/hotstuff/internal/proto/orchestrationpb"
 	"github.com/relab/hotstuff/internal/protostream"
+	"github.com/relab/hotstuff/logging"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -25,32 +26,43 @@ func NewRemoteWorker(send *protostream.Writer, recv *protostream.Reader) RemoteW
 }
 
 func (w RemoteWorker) rpc(req proto.Message) (res proto.Message, err error) {
+	logger := logging.New("remote_worker")
+	logger.Info("RemoteWorker: Begin rpc")
 	err = w.send.WriteAny(req)
 	if err != nil {
 		return nil, err
 	}
+	logger.Info("RemoteWorker: End WriteAny")
 	res, err = w.recv.ReadAny()
 	if err != nil {
 		return nil, err
 	}
+	logger.Info("RemoteWorker: End ReadAny")
 	// unpack status errors
 	if s, ok := res.(*spb.Status); ok {
 		return nil, status.FromProto(s).Err()
 	}
+	logger.Info("RemoteWorker: End rpc")
 	return res, nil
 }
 
 // CreateReplica requests that the remote worker creates the specified replicas,
 // returning details about the created replicas.
 func (w RemoteWorker) CreateReplica(req *orchestrationpb.CreateReplicaRequest) (res *orchestrationpb.CreateReplicaResponse, err error) {
+	logger := logging.New("remote_worker")
+	logger.Info("RemoteWorker: Begin CreateReplica")
+
 	msg, err := w.rpc(req)
-	if err != nil{
+	logger.Info("RemoteWorker: End CreateReplica")
+	if err != nil {
 		return nil, err
 	}
 	res, ok := msg.(*orchestrationpb.CreateReplicaResponse)
 	if !ok {
 		return nil, fmt.Errorf("wrong type for response message: got %T, wanted: %T", msg, res)
 	}
+
+	logger.Info("RemoteWorker: End CreateReplica")
 	return res, nil
 }
 

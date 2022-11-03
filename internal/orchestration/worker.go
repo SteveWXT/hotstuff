@@ -85,7 +85,13 @@ func (w *Worker) Run() error {
 			res = s.Proto()
 		}
 
+		logger := logging.New("worker")
+		logger.Info("worker: Begin WriteAny")
+
 		err = w.send.WriteAny(res)
+
+		logger.Info("worker: End WriteAny")
+
 		if err != nil {
 			return err
 		}
@@ -106,6 +112,9 @@ func NewWorker(send *protostream.Writer, recv *protostream.Reader, dl metrics.Lo
 }
 
 func (w *Worker) createReplicas(req *orchestrationpb.CreateReplicaRequest) (*orchestrationpb.CreateReplicaResponse, error) {
+
+	logger := logging.New("worker")
+
 	resp := &orchestrationpb.CreateReplicaResponse{Replicas: make(map[uint32]*orchestrationpb.ReplicaInfo)}
 	for _, cfg := range req.GetReplicas() {
 		r, err := w.createReplica(cfg)
@@ -130,8 +139,15 @@ func (w *Worker) createReplicas(req *orchestrationpb.CreateReplicaRequest) (*orc
 		if err != nil {
 			return nil, err
 		}
-		
-		r.StartServers(replicaListener, clientListener)
+		pubsubListener, err := net.Listen("tcp", ":0")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create listener: %w", err)
+		}
+
+		r.StartServers(replicaListener, clientListener, pubsubListener)
+
+		logger.Info("worker: StartServers finish")
+
 		w.replicas[hotstuff.ID(cfg.GetID())] = r
 
 		resp.Replicas[cfg.GetID()] = &orchestrationpb.ReplicaInfo{
@@ -141,6 +157,8 @@ func (w *Worker) createReplicas(req *orchestrationpb.CreateReplicaRequest) (*orc
 			ClientPort:  clientPort,
 		}
 	}
+
+	logger.Info("worker: createReplicas finish")
 	return resp, nil
 }
 

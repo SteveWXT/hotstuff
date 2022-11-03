@@ -3,7 +3,7 @@ module github.com/relab/hotstuff
 go 1.18
 
 require (
-	github.com/SteveWXT/pubsub v0.1.1
+	github.com/SteveWXT/pubsub v0.1.5
 	github.com/felixge/fgprof v0.9.2
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
@@ -29,8 +29,9 @@ require (
 
 replace (
 	github.com/SteveWXT/hotstuff/pubsub => ./pubsub
-	github.com/relab/hotstuff/replica => ./replica
 	github.com/relab/hotstuff/metrics => ./metrics
+	github.com/relab/hotstuff/pubsub => ./pubsub
+	github.com/relab/hotstuff/replica => ./replica
 )
 
 require (

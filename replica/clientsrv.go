@@ -5,6 +5,7 @@ import (
 	"hash"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/relab/hotstuff"
 
@@ -13,11 +14,12 @@ import (
 	"github.com/relab/hotstuff/internal/proto/clientpb"
 	"github.com/relab/hotstuff/logging"
 	"github.com/relab/hotstuff/modules"
-	"github.com/relab/hotstuff/pubsub"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/SteveWXT/pubsub/clients"
 )
 
 // clientSrv serves a client.
@@ -31,7 +33,8 @@ type clientSrv struct {
 	cmdCache     *cmdCache
 	hash         hash.Hash
 
-	pbsrv *pubsub.PubSubServer
+	connector *clients.TCP
+	pbls      net.Listener
 }
 
 // newClientServer returns a new client server.
@@ -41,7 +44,6 @@ func newClientServer(conf Config, srvOpts []gorums.ServerOption) (srv *clientSrv
 		srv:          gorums.NewServer(srvOpts...),
 		cmdCache:     newCmdCache(int(conf.BatchSize)),
 		hash:         sha256.New(),
-		pbsrv:        pubsub.NewServer(),
 	}
 	clientpb.RegisterClientServer(srv.srv, srv)
 	return srv
@@ -54,7 +56,6 @@ func (srv *clientSrv) InitModule(mods *modules.Core) {
 		&srv.logger,
 	)
 	srv.cmdCache.InitModule(mods)
-	srv.pbsrv.InitModule(mods)
 }
 
 func (srv *clientSrv) Start(addr string) error {
@@ -74,15 +75,16 @@ func (srv *clientSrv) StartOnListener(lis net.Listener) {
 			srv.logger.Error(err)
 		}
 
-		
 		//start pubsub module
-		srv.pbsrv.Start()
+		// srv.pbsrv.Start()
 	}()
 }
 
 func (srv *clientSrv) Stop() {
 	srv.srv.Stop()
-	srv.pbsrv.Close()
+	if srv.connector != nil {
+		srv.connector.Close()
+	}
 }
 
 func (srv *clientSrv) ExecCommand(ctx gorums.ServerCtx, cmd *clientpb.Command) (*emptypb.Empty, error) {
@@ -113,7 +115,7 @@ func (srv *clientSrv) Exec(cmd hotstuff.Command) {
 		_, _ = srv.hash.Write(cmd.Data)
 
 		// relay the cmd to the pubsub module
-		go srv.pbsrv.HandleMsg(cmd.Data)
+		go srv.RelayToPubSub(cmd.Data)
 
 		srv.mut.Lock()
 		id := cmdID{cmd.GetClientID(), cmd.GetSequenceNumber()}
@@ -144,4 +146,36 @@ func (srv *clientSrv) Fork(cmd hotstuff.Command) {
 		}
 		srv.mut.Unlock()
 	}
+}
+
+// AddConnector add a pubsub connector (client)
+func (srv *clientSrv) AddConnector(pbls net.Listener) {
+	connector, err := clients.New(pbls.Addr().String())
+	if err != nil {
+		srv.logger.Fatalf("PubSub server connector start failed: %v", err)
+	}
+
+	// srv.pbls = pbls
+	srv.connector = connector
+	srv.logger.Info("clientSrv: add connector")
+}
+
+// RelayToPubSub replay data to pusub module
+func (srv *clientSrv) RelayToPubSub(data []byte) {
+	if srv.connector == nil {
+		srv.AddConnector(srv.pbls)
+	}
+
+	dataStr := "hello"
+	srv.logger.Debugf("PubSub connector start to handle msg: %v", dataStr)
+	mockSSE()
+	err := srv.connector.Publish([]string{"topic"}, dataStr)
+	if err != nil {
+		srv.logger.Fatalf("Connector publish error: %v", err)
+	}
+}
+
+// mockSSE simulate the SSE matching time for testing
+func mockSSE() {
+	time.Sleep(time.Millisecond * 3)
 }

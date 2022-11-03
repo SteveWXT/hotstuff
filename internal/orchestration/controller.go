@@ -78,12 +78,14 @@ func (e *Experiment) Run() (err error) {
 	if err != nil {
 		return fmt.Errorf("failed to create replicas: %w", err)
 	}
+	e.Logger.Info("End Creating replicas...")
 
 	e.Logger.Info("Starting replicas...")
 	err = e.startReplicas(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to start replicas: %w", err)
 	}
+	e.Logger.Info("End Starting replicas...")
 
 	e.Logger.Info("Starting clients...")
 	err = e.startClients(cfg)
@@ -405,10 +407,12 @@ func (e *Experiment) stopClients() error {
 	for host, worker := range e.Hosts {
 		req := &orchestrationpb.StopClientRequest{}
 		req.IDs = getIDs(host, e.hostsToClients)
+		e.Logger.Infof("Exp: Stop clients %v begin", host)
 		_, err := worker.StopClient(req)
 		if err != nil {
 			return err
 		}
+		e.Logger.Infof("Exp: Stop clients %v successfully", host)
 	}
 	return nil
 }

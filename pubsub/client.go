@@ -1,6 +1,8 @@
 package pubsub
 
 import (
+	"context"
+
 	"github.com/SteveWXT/pubsub/clients"
 	"github.com/relab/hotstuff/eventloop"
 	"github.com/relab/hotstuff/logging"
@@ -8,59 +10,65 @@ import (
 )
 
 type PubSubClients struct {
-	conns     []*clients.TCP
-	logger    logging.Logger
-	eventLoop *eventloop.EventLoop
+	Conns     []*clients.TCP
+	Logger    logging.Logger
+	EventLoop *eventloop.EventLoop
 }
 
 func (c *PubSubClients) InitModule(mods *modules.Core) {
 	mods.Get(
-		&c.logger,
-		&c.eventLoop,
+		&c.Logger,
+		&c.EventLoop,
 	)
 }
 
 func NewPubSubClients() *PubSubClients {
 	pbclients := &PubSubClients{
-		conns: make([]*clients.TCP, 0),
+		Conns: make([]*clients.TCP, 0),
 	}
 	return pbclients
 }
 
 // RunPubSubClients start a specific number of clients
-func (c *PubSubClients) RunPubSubClients(host string, n int) {
+func (c *PubSubClients) RunPubSubClients(host string, n int, ctx context.Context) {
 	for i := 0; i < n; i++ {
-		c.addSubscriber(host)
+		go c.addSubscriber(host, ctx)
 	}
 }
 
 func (c *PubSubClients) Close() {
-	for _, conn := range c.conns {
-		conn.Close()
+	for _, conn := range c.Conns {
+		if conn != nil {
+			conn.Close()
+		}
 	}
 }
 
 // addSubscriber start a client as subscriber
-func (c *PubSubClients) addSubscriber(host string) {
+func (c *PubSubClients) addSubscriber(host string, ctx context.Context) {
 	client, err := clients.New(host)
 	if err != nil {
-		c.logger.Fatalf("add subscriber error: %v", err)
+		c.Logger.Fatalf("add subscriber error: %v", err)
 	}
 
-	c.conns = append(c.conns, client)
+	c.Conns = append(c.Conns, client)
 	client.Subscribe([]string{"topic"})
-
-	c.logger.Info("A subscriber started at %v", host)
-
-	go c.processMsg(client)
-}
-
-func (c *PubSubClients) processMsg(client *clients.TCP) {
 	ch := client.Messages()
+
+	c.Logger.Info("A subscriber started at %v", host)
+
+loop:
 	for msg := range ch {
 		c.fakeProcess(msg.Data)
-		c.eventLoop.AddEvent(ReadMeasurementEvent{})
+		c.EventLoop.AddEvent(ReadMeasurementEvent{})
+		select {
+		case <-ctx.Done():
+			break loop
+		default:
+
+		}
 	}
+
 }
 
 // fakeProcess used to simulate the client process messages

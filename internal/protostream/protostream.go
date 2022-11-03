@@ -8,6 +8,7 @@ import (
 	"io"
 	"sync"
 
+	"github.com/relab/hotstuff/logging"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -79,6 +80,9 @@ func NewReader(src io.Reader) *Reader {
 
 // ReadAny reads a protobuf message wrapped in an anypb.Any message from the stream.
 func (r *Reader) ReadAny() (proto.Message, error) {
+	logger := logging.New("proto reader")
+	logger.Info("ProtoRedaer: Begin ReadAny")
+
 	any := anypb.Any{}
 	err := r.Read(&any)
 	if err != nil {
@@ -90,35 +94,57 @@ func (r *Reader) ReadAny() (proto.Message, error) {
 		return nil, fmt.Errorf("protostream: failed to unmarshal message from Any message: %w", err)
 	}
 
+	logger.Info("ProtoRedaer: End ReadAny")
 	return msg, nil
 }
 
 // Read reads a protobuf message from the stream and unmarshals it into the dst message.
 func (r *Reader) Read(dst proto.Message) error {
+	logger := logging.New("proto reader")
+	logger.Info("ProtoRedaer: Begin Read")
+
 	r.mut.Lock()
 	defer r.mut.Unlock()
 
+	logger.Info("ProtoRedaer: Begin read message length")
+
 	var msgLenBuf [4]byte
-	_, err := io.ReadFull(r.src, msgLenBuf[:])
+	n, err := io.ReadFull(r.src, msgLenBuf[:])
+
+	logger.Infof("ProtoRedaer: read message length: %d", n)
+
 	if err != nil {
+		logger.Infof("ProtoRedaer: Read error: failed to read message length: %w", err)
 		return fmt.Errorf("protostream: failed to read message length: %w", err)
 	}
 
+	logger.Info("ProtoRedaer: End read message length")
+
 	msgLen := binary.LittleEndian.Uint32(msgLenBuf[:])
 	if msgLen > 2147483648 { // 2 GiB limit
+		logger.Info("ProtoRedaer: Read error: message length is greater than 2 GiB")
 		return errors.New("protostream: message length is greater than 2 GiB")
 	}
+
+	logger.Info("ProtoRedaer: End process very big message length")
 
 	buf := make([]byte, msgLen)
 	_, err = io.ReadFull(r.src, buf)
 	if err != nil {
+		logger.Infof("ProtoRedaer: Read error: failed to read message: %w", err)
 		return fmt.Errorf("protostream: failed to read message: %w", err)
 	}
 
+	logger.Info("ProtoRedaer: End read message")
+
 	err = r.unmarshaler.Unmarshal(buf, dst)
 	if err != nil {
+		logger.Infof("ProtoRedaer: Read error: failed to unmarshal message: %w", err)
 		return fmt.Errorf("protostream: failed to unmarshal message: %w", err)
 	}
 
+	logger.Info("ProtoRedaer: End unmarshal message")
+
+	logger.Info("ProtoRedaer: End Read")
 	return nil
 }
