@@ -45,7 +45,7 @@ func (c *PubSubClients) Close() {
 
 // addSubscriber start a client as subscriber
 func (c *PubSubClients) addSubscriber(host string, ctx context.Context) {
-	client, err := NewClient(host)
+	client, err := NewClient(host, ctx)
 	if err != nil {
 		c.Logger.Fatalf("add subscriber error: %v", err)
 	}

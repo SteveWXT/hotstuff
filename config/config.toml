@@ -1,10 +1,10 @@
 replicas = 10
-clients = 20
+clients = 30
 client-timeout = "5s"
-rate-step = 10
+rate-step = 20
 duration = "30s"
 max-timeout = "5s"
-batch-size = 8
+batch-size = 64
 payload-size = 5
 metrics = ["client-latency", "throughput","read-throughput"]
 measurement-interval = "30s"

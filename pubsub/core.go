@@ -98,8 +98,13 @@ func publish(pid uint32, tags []string, data string) error {
 				// we don't want this operation blocking the range of other subscribers
 				// waiting to get messages
 				go func(p *Proxy, msg Message) {
-					p.check <- msg
-					logger.Debug("Published message")
+					select {
+					case <-p.done:
+						logger.Debug("Subscriber done")
+					default:
+						p.check <- msg
+						logger.Debug("Published message")
+					}
 				}(subscriber, msg)
 			}
 		}

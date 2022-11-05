@@ -33,7 +33,7 @@ type clientSrv struct {
 
 	connector      *pubsub.ClientConn
 	connectorClose bool
-	pbls           net.Listener
+	pbsrv          *pubsub.PubSubServer
 }
 
 // newClientServer returns a new client server.
@@ -148,21 +148,17 @@ func (srv *clientSrv) Fork(cmd hotstuff.Command) {
 }
 
 // AddConnector add a pubsub connector (client)
-func (srv *clientSrv) AddConnector(pbls net.Listener) {
-	connector, err := pubsub.NewClient(pbls.Addr().String())
-	if err != nil {
-		srv.logger.Fatalf("PubSub server connector start failed: %v", err)
-	}
-
-	// srv.pbls = pbls
-	srv.connector = connector
+func (srv *clientSrv) AddConnector(pbsrv *pubsub.PubSubServer) {
+	srv.pbsrv = pbsrv
+	srv.connector = srv.pbsrv.GetClient()
 	srv.logger.Info("clientSrv: add connector")
 }
 
 // RelayToPubSub replay data to pusub module
 func (srv *clientSrv) RelayToPubSub(data []byte) {
 	if srv.connector == nil {
-		srv.AddConnector(srv.pbls)
+		srv.connector = srv.pbsrv.GetClient()
+		srv.logger.Info("clientSrv: add connector")
 	}
 
 	dataStr := "hello"

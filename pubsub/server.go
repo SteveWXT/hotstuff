@@ -18,6 +18,7 @@ type PubSubServer struct {
 	Logger    logging.Logger
 	Pbclients *PubSubClients
 
+	ctx    context.Context
 	cancel context.CancelFunc
 }
 
@@ -44,11 +45,10 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 
 	pbsrv.Ls = ls
 
-	var ctx context.Context
-	ctx, pbsrv.cancel = context.WithCancel(context.Background())
+	pbsrv.ctx, pbsrv.cancel = context.WithCancel(context.Background())
 
 	success := make(chan struct{})
-	go pbsrv.startWithLS(ls, ctx, success)
+	go pbsrv.startWithLS(ls, pbsrv.ctx, success)
 
 	port, _ := getPort(ls)
 	pbsrv.Logger.Infof("PubSub server listen on port: %d", port)
@@ -56,8 +56,16 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 	// add subscribers
 	<-success
 	n := 2
-	pbsrv.Pbclients.RunPubSubClients(ls.Addr().String(), n, ctx)
+	pbsrv.Pbclients.RunPubSubClients(ls.Addr().String(), n, pbsrv.ctx)
 	pbsrv.Logger.Infof("Started %v PubSub mock subscribers", n)
+}
+
+func (pbsrv *PubSubServer) GetClient() *ClientConn {
+	client, err := NewClient(pbsrv.Ls.Addr().String(), pbsrv.ctx)
+	if err != nil {
+		pbsrv.Logger.Debugf("pubsub-server: GetClient error: %v", err)
+	}
+	return client
 }
 
 func (pbsrv *PubSubServer) Close() {

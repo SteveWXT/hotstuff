@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,15 +16,17 @@ type (
 		encoder  *json.Encoder      //
 		host     string             //
 		messages chan Message       // the channel that core server 'publishes' updates to
+		ctx      context.Context
 	}
 )
 
 // New attempts to connect to a running core server at the clients specified
 // host and port.
-func NewClient(host string) (*ClientConn, error) {
+func NewClient(host string, ctx context.Context) (*ClientConn, error) {
 	client := &ClientConn{
 		host:     host,
 		messages: make(chan Message),
+		ctx:      ctx,
 	}
 
 	return client, client.connect()
@@ -60,6 +63,7 @@ func (c *ClientConn) connect() error {
 	// its commands. If so attempt to execute the command.
 	go func() {
 
+	loop:
 		for {
 			msg := Message{}
 
@@ -79,6 +83,16 @@ func (c *ClientConn) connect() error {
 			}
 			c.messages <- msg // read from this using the .Messages() function
 			logger.Debug("[pubsub client] Received message - %#v", msg)
+
+			select {
+			case <-c.ctx.Done():
+				if conn != nil {
+					conn.Close()
+				}
+				break loop
+			default:
+
+			}
 		}
 	}()
 
