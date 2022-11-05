@@ -85,12 +85,12 @@ func (w *Worker) Run() error {
 			res = s.Proto()
 		}
 
-		logger := logging.New("worker")
-		logger.Info("worker: Begin WriteAny")
+		// logger := logging.New("worker")
+		// logger.Info("worker: Begin WriteAny")
 
 		err = w.send.WriteAny(res)
 
-		logger.Info("worker: End WriteAny")
+		// logger.Info("worker: End WriteAny")
 
 		if err != nil {
 			return err

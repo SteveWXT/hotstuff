@@ -1,6 +1,9 @@
 package pubsub
 
-import "sort"
+import (
+	"sort"
+	"time"
+)
 
 type (
 	subscriptions interface {
@@ -105,6 +108,7 @@ func (node *Node) remove(keys []string) {
 // Match sorts the keys and then attempts to find a match
 func (node *Node) Match(keys []string) bool {
 	sort.Strings(keys)
+	mockSSE()
 	return node.match(keys)
 }
 
@@ -131,6 +135,11 @@ func (node *Node) match(keys []string) bool {
 
 	// if a branch does exist we down the branch until we find a leaf (above)
 	return branch.match(keys[1:])
+}
+
+// mockSSE simulate the SSE matching time for testing
+func mockSSE() {
+	time.Sleep(time.Millisecond * 3)
 }
 
 // ToSlice recurses down an entire node returning a list of all branches and leaves

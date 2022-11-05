@@ -163,13 +163,13 @@ func (e *Experiment) createReplicas() (cfg *orchestrationpb.ReplicaConfiguration
 			req.Replicas[opts.ID] = opts
 		}
 
-		// test log
-		e.Logger.Infof("generagte ca and keys for %v success", host)
+		// // test log
+		// e.Logger.Infof("generagte ca and keys for %v success", host)
 
 		wcfg, err := worker.CreateReplica(req)
 		if err != nil {
-			// test log
-			e.Logger.Infof("worker: CreateReplica for %v success", host)
+			// // test log
+			// e.Logger.Infof("worker: CreateReplica for %v success", host)
 
 			return nil, err
 		}
@@ -186,9 +186,9 @@ func (e *Experiment) createReplicas() (cfg *orchestrationpb.ReplicaConfiguration
 	}
 
 	// test log
-	if err == nil {
-		e.Logger.Info("createReplicas success")
-	}
+	// if err == nil {
+	// 	e.Logger.Info("createReplicas success")
+	// }
 	return cfg, nil
 }
 

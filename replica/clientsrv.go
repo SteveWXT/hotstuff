@@ -5,7 +5,6 @@ import (
 	"hash"
 	"net"
 	"sync"
-	"time"
 
 	"github.com/relab/hotstuff"
 
@@ -32,8 +31,9 @@ type clientSrv struct {
 	cmdCache     *cmdCache
 	hash         hash.Hash
 
-	connector *pubsub.ClientConn
-	pbls      net.Listener
+	connector      *pubsub.ClientConn
+	connectorClose bool
+	pbls           net.Listener
 }
 
 // newClientServer returns a new client server.
@@ -79,6 +79,7 @@ func (srv *clientSrv) StartOnListener(lis net.Listener) {
 func (srv *clientSrv) Stop() {
 	srv.srv.Stop()
 	if srv.connector != nil {
+		srv.connectorClose = true
 		srv.connector.Close()
 	}
 }
@@ -111,7 +112,9 @@ func (srv *clientSrv) Exec(cmd hotstuff.Command) {
 		_, _ = srv.hash.Write(cmd.Data)
 
 		// relay the cmd to the pubsub module
-		go srv.RelayToPubSub(cmd.Data)
+		if srv.connectorClose == false {
+			go srv.RelayToPubSub(cmd.Data)
+		}
 
 		srv.mut.Lock()
 		id := cmdID{cmd.GetClientID(), cmd.GetSequenceNumber()}
@@ -164,14 +167,8 @@ func (srv *clientSrv) RelayToPubSub(data []byte) {
 
 	dataStr := "hello"
 	srv.logger.Debugf("PubSub connector start to handle msg: %v", dataStr)
-	mockSSE()
 	err := srv.connector.Publish([]string{"topic"}, dataStr)
 	if err != nil {
 		srv.logger.Fatalf("Connector publish error: %v", err)
 	}
-}
-
-// mockSSE simulate the SSE matching time for testing
-func mockSSE() {
-	time.Sleep(time.Millisecond * 3)
 }

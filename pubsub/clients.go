@@ -71,7 +71,7 @@ func (c *ClientConn) connect() error {
 				case io.ErrUnexpectedEOF:
 					logger.Debug("[pubsub client] pubsub terminated connection unexpectedly")
 				default:
-					logger.Error("[pubsub client] Failed to get message from pubsub - %s", err.Error())
+					logger.Debug("[pubsub client] Failed to get message from pubsub - %s", err.Error())
 				}
 				conn.Close()
 				close(c.messages)
