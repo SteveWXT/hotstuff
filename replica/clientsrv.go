@@ -165,6 +165,6 @@ func (srv *clientSrv) RelayToPubSub(data []byte) {
 	srv.logger.Debugf("PubSub connector start to handle msg: %v", dataStr)
 	err := srv.connector.Publish([]string{"topic"}, dataStr)
 	if err != nil {
-		srv.logger.Fatalf("Connector publish error: %v", err)
+		srv.logger.Debugf("Connector publish error: %v", err)
 	}
 }
