@@ -139,7 +139,7 @@ func (node *Node) match(keys []string) bool {
 
 // mockSSE simulate the SSE matching time for testing
 func mockSSE() {
-	time.Sleep(time.Millisecond * 3)
+	time.Sleep(time.Microsecond * 100)
 }
 
 // ToSlice recurses down an entire node returning a list of all branches and leaves

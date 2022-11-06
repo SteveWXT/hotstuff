@@ -57,14 +57,24 @@ func (c *PubSubClients) addSubscriber(host string, ctx context.Context) {
 	c.Logger.Info("A subscriber started at %v", host)
 
 loop:
-	for msg := range ch {
-		c.fakeProcess(msg.Data)
-		c.EventLoop.AddEvent(ReadMeasurementEvent{})
+	// for msg := range ch {
+	// 	c.fakeProcess(msg.Data)
+	// 	c.EventLoop.AddEvent(ReadMeasurementEvent{})
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		break loop
+	// 	default:
+
+	// 	}
+	// }
+
+	for {
 		select {
 		case <-ctx.Done():
 			break loop
-		default:
-
+		case msg := <-ch:
+			c.fakeProcess(msg.Data)
+			c.EventLoop.AddEvent(ReadMeasurementEvent{})
 		}
 	}
 

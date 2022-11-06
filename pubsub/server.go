@@ -55,7 +55,7 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 
 	// add subscribers
 	<-success
-	n := 2
+	n := 1
 	pbsrv.Pbclients.RunPubSubClients(ls.Addr().String(), n, pbsrv.ctx)
 	pbsrv.Logger.Infof("Started %v PubSub mock subscribers", n)
 }

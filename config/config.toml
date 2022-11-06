@@ -1,16 +1,85 @@
-replicas = 10
-clients = 30
+replicas = 16
+clients = 160
 client-timeout = "5s"
-rate-step = 20
+rate-step = 10
 duration = "30s"
 max-timeout = "5s"
-batch-size = 64
+batch-size = 32
 payload-size = 5
 metrics = ["client-latency", "throughput","read-throughput"]
 measurement-interval = "30s"
 output = "./measurement"
-hosts = ["hs01","hs02","hs03","hs04","hs05",]
+hosts = ["hs01","hs02","hs03","hs04","hs05","hs06","hs07","hs08","hs09","hs10","hs11","hs12","hs13","hs14","hs15","hs16",]
 # log-level = "debug"
+
+# 公网
+
+# [[hosts-config]]
+# name = "hs01"
+# internal-address = "123.57.136.108"
+
+# [[hosts-config]]
+# name = "hs02"
+# internal-address = "39.105.115.139"
+
+# [[hosts-config]]
+# name = "hs03"
+# internal-address = "172.21.160.127"
+
+# [[hosts-config]]
+# name = "hs04"
+# internal-address = "172.21.160.132"
+
+# [[hosts-config]]
+# name = "hs05"
+# internal-address = "172.21.160.125"
+
+# [[hosts-config]]
+# name = "hs06"
+# internal-address = "172.21.160.134"
+
+# [[hosts-config]]
+# name = "hs07"
+# internal-address = "172.21.160.142"
+
+# [[hosts-config]]
+# name = "hs08"
+# internal-address = "172.21.160.136"
+
+# [[hosts-config]]
+# name = "hs09"
+# internal-address = "172.21.160.141"
+
+# [[hosts-config]]
+# name = "hs10"
+# internal-address = "172.21.160.143"
+
+# [[hosts-config]]
+# name = "hs11"
+# internal-address = "172.21.160.138"
+
+# [[hosts-config]]
+# name = "hs12"
+# internal-address = "172.21.160.144"
+
+# [[hosts-config]]
+# name = "hs13"
+# internal-address = "172.21.160.137"
+
+# [[hosts-config]]
+# name = "hs14"
+# internal-address = "172.21.160.140"
+
+# [[hosts-config]]
+# name = "hs15"
+# internal-address = "172.21.160.139"
+
+# [[hosts-config]]
+# name = "hs16"
+# internal-address = "172.21.160.135"
+
+
+# 内网
 
 [[hosts-config]]
 name = "hs01"
@@ -31,3 +100,49 @@ internal-address = "172.21.160.132"
 [[hosts-config]]
 name = "hs05"
 internal-address = "172.21.160.125"
+
+[[hosts-config]]
+name = "hs06"
+internal-address = "172.21.160.134"
+
+[[hosts-config]]
+name = "hs07"
+internal-address = "172.21.160.142"
+
+[[hosts-config]]
+name = "hs08"
+internal-address = "172.21.160.136"
+
+[[hosts-config]]
+name = "hs09"
+internal-address = "172.21.160.141"
+
+[[hosts-config]]
+name = "hs10"
+internal-address = "172.21.160.143"
+
+[[hosts-config]]
+name = "hs11"
+internal-address = "172.21.160.138"
+
+[[hosts-config]]
+name = "hs12"
+internal-address = "172.21.160.144"
+
+[[hosts-config]]
+name = "hs13"
+internal-address = "172.21.160.137"
+
+[[hosts-config]]
+name = "hs14"
+internal-address = "172.21.160.140"
+
+[[hosts-config]]
+name = "hs15"
+internal-address = "172.21.160.139"
+
+[[hosts-config]]
+name = "hs16"
+internal-address = "172.21.160.135"
+
+
