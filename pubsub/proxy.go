@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"context"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -20,11 +21,12 @@ type (
 		id            uint32
 		subscriptions subscriptions
 		logger        logging.Logger
+		ctx           context.Context
 	}
 )
 
 // NewProxy ...
-func NewProxy() (p *Proxy) {
+func NewProxy(ctx context.Context) (p *Proxy) {
 
 	// create new proxy
 	p = &Proxy{
@@ -34,6 +36,7 @@ func NewProxy() (p *Proxy) {
 		id:            atomic.AddUint32(&uid, 1),
 		subscriptions: newNode(),
 		logger:        logging.New("Proxy"),
+		ctx:           ctx,
 	}
 
 	p.connect()
@@ -76,6 +79,8 @@ func (p *Proxy) handleMessages() {
 				p.Pipe <- msg
 			}
 
+		case <-p.ctx.Done():
+			return
 		case <-p.done:
 			return
 		}

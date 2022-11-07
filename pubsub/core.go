@@ -101,12 +101,11 @@ func publish(pid uint32, tags []string, data string) error {
 					select {
 					case <-p.done:
 						logger.Debug("Subscriber done")
+					case <-p.ctx.Done():
+						return
 					default:
-						_, ok := <-p.check
-						if ok {
-							p.check <- msg
-							logger.Debug("Published message")
-						}
+						p.check <- msg
+						logger.Debug("Published message")
 					}
 				}(subscriber, msg)
 			}

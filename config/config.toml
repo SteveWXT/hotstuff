@@ -1,15 +1,16 @@
-replicas = 16
-clients = 160
+replicas = 4
+clients = 10
 client-timeout = "5s"
 rate-step = 10
 duration = "30s"
 max-timeout = "5s"
-batch-size = 32
+batch-size = 16
 payload-size = 5
 metrics = ["client-latency", "throughput","read-throughput"]
 measurement-interval = "30s"
 output = "./measurement"
-hosts = ["hs01","hs02","hs03","hs04","hs05","hs06","hs07","hs08","hs09","hs10","hs11","hs12","hs13","hs14","hs15","hs16",]
+hosts = ["hs01","hs02",]
+# hosts = ["hs01","hs02","hs03","hs04","hs05","hs06","hs07","hs08","hs09","hs10","hs11","hs12","hs13","hs14","hs15","hs16",]
 # log-level = "debug"
 
 # 公网
@@ -89,60 +90,60 @@ internal-address = "172.21.160.130"
 name = "hs02"
 internal-address = "172.21.160.133"
 
-[[hosts-config]]
-name = "hs03"
-internal-address = "172.21.160.127"
+# [[hosts-config]]
+# name = "hs03"
+# internal-address = "172.21.160.127"
 
-[[hosts-config]]
-name = "hs04"
-internal-address = "172.21.160.132"
+# [[hosts-config]]
+# name = "hs04"
+# internal-address = "172.21.160.132"
 
-[[hosts-config]]
-name = "hs05"
-internal-address = "172.21.160.125"
+# [[hosts-config]]
+# name = "hs05"
+# internal-address = "172.21.160.125"
 
-[[hosts-config]]
-name = "hs06"
-internal-address = "172.21.160.134"
+# [[hosts-config]]
+# name = "hs06"
+# internal-address = "172.21.160.134"
 
-[[hosts-config]]
-name = "hs07"
-internal-address = "172.21.160.142"
+# [[hosts-config]]
+# name = "hs07"
+# internal-address = "172.21.160.142"
 
-[[hosts-config]]
-name = "hs08"
-internal-address = "172.21.160.136"
+# [[hosts-config]]
+# name = "hs08"
+# internal-address = "172.21.160.136"
 
-[[hosts-config]]
-name = "hs09"
-internal-address = "172.21.160.141"
+# [[hosts-config]]
+# name = "hs09"
+# internal-address = "172.21.160.141"
 
-[[hosts-config]]
-name = "hs10"
-internal-address = "172.21.160.143"
+# [[hosts-config]]
+# name = "hs10"
+# internal-address = "172.21.160.143"
 
-[[hosts-config]]
-name = "hs11"
-internal-address = "172.21.160.138"
+# [[hosts-config]]
+# name = "hs11"
+# internal-address = "172.21.160.138"
 
-[[hosts-config]]
-name = "hs12"
-internal-address = "172.21.160.144"
+# [[hosts-config]]
+# name = "hs12"
+# internal-address = "172.21.160.144"
 
-[[hosts-config]]
-name = "hs13"
-internal-address = "172.21.160.137"
+# [[hosts-config]]
+# name = "hs13"
+# internal-address = "172.21.160.137"
 
-[[hosts-config]]
-name = "hs14"
-internal-address = "172.21.160.140"
+# [[hosts-config]]
+# name = "hs14"
+# internal-address = "172.21.160.140"
 
-[[hosts-config]]
-name = "hs15"
-internal-address = "172.21.160.139"
+# [[hosts-config]]
+# name = "hs15"
+# internal-address = "172.21.160.139"
 
-[[hosts-config]]
-name = "hs16"
-internal-address = "172.21.160.135"
+# [[hosts-config]]
+# name = "hs16"
+# internal-address = "172.21.160.135"
 
 

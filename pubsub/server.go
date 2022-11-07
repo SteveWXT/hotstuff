@@ -142,7 +142,7 @@ func (pbsrv *PubSubServer) handleConnectionWithCtx(conn net.Conn, errChan chan<-
 	defer conn.Close()
 
 	// create a new client for each connection
-	proxy := NewProxy()
+	proxy := NewProxy(ctx)
 	defer proxy.Close()
 
 	handlers := GenerateHandlers()
@@ -152,17 +152,15 @@ func (pbsrv *PubSubServer) handleConnectionWithCtx(conn net.Conn, errChan chan<-
 
 	go func(ctx context.Context) {
 	loop:
-		for msg := range proxy.Pipe {
-
-			if err := encoder.Encode(msg); err != nil {
-				pbsrv.Logger.Debugf("pbsrv - startTCPWithLS error: %w", err)
-				break
-			}
+		for {
 			select {
 			case <-ctx.Done():
 				break loop
-			default:
-
+			case msg := <-proxy.Pipe:
+				if err := encoder.Encode(msg); err != nil {
+					pbsrv.Logger.Debugf("pbsrv - startTCPWithLS error: %w", err)
+					break
+				}
 			}
 		}
 	}(ctx)
