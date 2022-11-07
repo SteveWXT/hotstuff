@@ -104,8 +104,10 @@ func publish(pid uint32, tags []string, data string) error {
 					case <-p.ctx.Done():
 						return
 					default:
-						p.check <- msg
-						logger.Debug("Published message")
+						if p.checkFlag == true {
+							p.check <- msg
+							logger.Debug("Published message")
+						}
 					}
 				}(subscriber, msg)
 			}

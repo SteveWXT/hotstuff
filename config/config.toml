@@ -2,14 +2,14 @@ replicas = 4
 clients = 10
 client-timeout = "5s"
 rate-step = 10
-duration = "30s"
+duration = "20s"
 max-timeout = "5s"
 batch-size = 16
 payload-size = 5
 metrics = ["client-latency", "throughput","read-throughput"]
-measurement-interval = "30s"
+measurement-interval = "20s"
 output = "./measurement"
-hosts = ["hs01","hs02",]
+hosts = ["hs04","hs02",]
 # hosts = ["hs01","hs02","hs03","hs04","hs05","hs06","hs07","hs08","hs09","hs10","hs11","hs12","hs13","hs14","hs15","hs16",]
 # log-level = "debug"
 
@@ -82,9 +82,9 @@ hosts = ["hs01","hs02",]
 
 # 内网
 
-[[hosts-config]]
-name = "hs01"
-internal-address = "172.21.160.130"
+# [[hosts-config]]
+# name = "hs01"
+# internal-address = "172.21.160.130"
 
 [[hosts-config]]
 name = "hs02"
@@ -94,9 +94,9 @@ internal-address = "172.21.160.133"
 # name = "hs03"
 # internal-address = "172.21.160.127"
 
-# [[hosts-config]]
-# name = "hs04"
-# internal-address = "172.21.160.132"
+[[hosts-config]]
+name = "hs04"
+internal-address = "172.21.160.132"
 
 # [[hosts-config]]
 # name = "hs05"

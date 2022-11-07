@@ -26,6 +26,7 @@ type (
 
 		eventloop *eventloop.EventLoop
 		ctx       context.Context
+		checkFlag bool
 	}
 )
 
@@ -41,6 +42,7 @@ func NewProxy(eventloop *eventloop.EventLoop, ctx context.Context) (p *Proxy) {
 		subscriptions: newNode(),
 		eventloop:     eventloop,
 		ctx:           ctx,
+		checkFlag:     true,
 	}
 
 	p.logger = logging.New("Proxy" + fmt.Sprint(p.id))
@@ -63,6 +65,7 @@ func (p *Proxy) handleMessages() {
 	defer func() {
 		<-p.done
 		p.logger.Debug("Got p.done, closing check and pipe")
+		p.checkFlag = false
 		close(p.check)
 		close(p.Pipe) // don't close pipe (response/pong messages need it), but leaving it unclosed leaves ram bloat on server even after client disconnects
 	}()

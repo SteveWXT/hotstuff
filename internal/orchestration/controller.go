@@ -1,7 +1,6 @@
 package orchestration
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/json"
@@ -374,9 +373,9 @@ func (e *Experiment) stopReplicas() error {
 		if cmp == nil {
 			cmp = hash
 		}
-		if !bytes.Equal(cmp, hash) {
-			return fmt.Errorf("hash mismatch")
-		}
+		// if !bytes.Equal(cmp, hash) {
+		// 	return fmt.Errorf("hash mismatch")
+		// }
 	}
 	return nil
 }
