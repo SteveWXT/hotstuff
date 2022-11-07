@@ -2,10 +2,12 @@ package pubsub
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/relab/hotstuff/eventloop"
 	"github.com/relab/hotstuff/logging"
 )
 
@@ -21,12 +23,14 @@ type (
 		id            uint32
 		subscriptions subscriptions
 		logger        logging.Logger
-		ctx           context.Context
+
+		eventloop *eventloop.EventLoop
+		ctx       context.Context
 	}
 )
 
 // NewProxy ...
-func NewProxy(ctx context.Context) (p *Proxy) {
+func NewProxy(eventloop *eventloop.EventLoop, ctx context.Context) (p *Proxy) {
 
 	// create new proxy
 	p = &Proxy{
@@ -35,10 +39,11 @@ func NewProxy(ctx context.Context) (p *Proxy) {
 		done:          make(chan bool),
 		id:            atomic.AddUint32(&uid, 1),
 		subscriptions: newNode(),
-		logger:        logging.New("Proxy"),
+		eventloop:     eventloop,
 		ctx:           ctx,
 	}
 
+	p.logger = logging.New("Proxy" + fmt.Sprint(p.id))
 	p.connect()
 
 	return
@@ -46,7 +51,7 @@ func NewProxy(ctx context.Context) (p *Proxy) {
 
 // connect
 func (p *Proxy) connect() {
-
+	p.logger.Info("A new Proxy connecting...")
 	p.logger.Debug("Client connecting...")
 
 	// this gofunc handles matching messages to subscriptions for the proxy
@@ -56,6 +61,7 @@ func (p *Proxy) connect() {
 func (p *Proxy) handleMessages() {
 
 	defer func() {
+		<-p.done
 		p.logger.Debug("Got p.done, closing check and pipe")
 		close(p.check)
 		close(p.Pipe) // don't close pipe (response/pong messages need it), but leaving it unclosed leaves ram bloat on server even after client disconnects
@@ -77,6 +83,7 @@ func (p *Proxy) handleMessages() {
 			if match {
 				p.logger.Debug("Sending msg on pipe")
 				p.Pipe <- msg
+				p.eventloop.AddEvent(ReadMeasurementEvent{})
 			}
 
 		case <-p.ctx.Done():

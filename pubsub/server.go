@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/relab/hotstuff/eventloop"
 	"github.com/relab/hotstuff/logging"
 	"github.com/relab/hotstuff/modules"
 )
@@ -18,12 +19,18 @@ type PubSubServer struct {
 	Logger    logging.Logger
 	Pbclients *PubSubClients
 
+	EventLoop *eventloop.EventLoop
+
 	ctx    context.Context
 	cancel context.CancelFunc
 }
 
 func (pbsrv *PubSubServer) InitModule(mods *modules.Core) {
-	mods.Get(&pbsrv.Logger)
+	mods.Get(
+		&pbsrv.Logger,
+		&pbsrv.EventLoop,
+	)
+
 	pbsrv.Pbclients.InitModule(mods)
 }
 
@@ -55,9 +62,9 @@ func (pbsrv *PubSubServer) Start(ls net.Listener) {
 
 	// add subscribers
 	<-success
-	n := 1
-	pbsrv.Pbclients.RunPubSubClients(ls.Addr().String(), n, pbsrv.ctx)
-	pbsrv.Logger.Infof("Started %v PubSub mock subscribers", n)
+	// n := 1
+	pbsrv.Pbclients.RunPubSubClients(ls.Addr().String(), 1, pbsrv.ctx)
+	pbsrv.Logger.Infof("Started %v PubSub mock subscribers", 1)
 }
 
 func (pbsrv *PubSubServer) GetClient() *ClientConn {
@@ -142,7 +149,7 @@ func (pbsrv *PubSubServer) handleConnectionWithCtx(conn net.Conn, errChan chan<-
 	defer conn.Close()
 
 	// create a new client for each connection
-	proxy := NewProxy(ctx)
+	proxy := NewProxy(pbsrv.EventLoop, ctx)
 	defer proxy.Close()
 
 	handlers := GenerateHandlers()

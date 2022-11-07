@@ -101,7 +101,12 @@ func (c *ClientConn) connect() error {
 
 // Ping the server
 func (c *ClientConn) Ping() error {
-	return c.encoder.Encode(&Message{Command: "ping"})
+	select {
+	case <-c.ctx.Done():
+		return nil
+	default:
+		return c.encoder.Encode(&Message{Command: "ping"})
+	}
 }
 
 // Subscribe takes the specified tags and tells the server to subscribe to updates
@@ -112,7 +117,12 @@ func (c *ClientConn) Subscribe(tags []string) error {
 		return fmt.Errorf("Unable to subscribe - missing tags")
 	}
 
-	return c.encoder.Encode(&Message{Command: "subscribe", Tags: tags})
+	select {
+	case <-c.ctx.Done():
+		return nil
+	default:
+		return c.encoder.Encode(&Message{Command: "subscribe", Tags: tags})
+	}
 }
 
 // Unsubscribe takes the specified tags and tells the server to unsubscribe from
@@ -123,7 +133,12 @@ func (c *ClientConn) Unsubscribe(tags []string) error {
 		return fmt.Errorf("Unable to unsubscribe - missing tags")
 	}
 
-	return c.encoder.Encode(&Message{Command: "unsubscribe", Tags: tags})
+	select {
+	case <-c.ctx.Done():
+		return nil
+	default:
+		return c.encoder.Encode(&Message{Command: "unsubscribe", Tags: tags})
+	}
 }
 
 // Publish sends a message to the core server to be published to all subscribed
@@ -138,7 +153,12 @@ func (c *ClientConn) Publish(tags []string, data string) error {
 		return fmt.Errorf("Unable to publish - missing data")
 	}
 
-	return c.encoder.Encode(&Message{Command: "publish", Tags: tags, Data: data})
+	select {
+	case <-c.ctx.Done():
+		return nil
+	default:
+		return c.encoder.Encode(&Message{Command: "publish", Tags: tags, Data: data})
+	}
 }
 
 // PublishAfter sends a message to the core server to be published to all subscribed
@@ -146,26 +166,47 @@ func (c *ClientConn) Publish(tags []string, data string) error {
 func (c *ClientConn) PublishAfter(tags []string, data string, delay time.Duration) error {
 	go func() {
 		<-time.After(delay)
-		c.Publish(tags, data)
+
+		select {
+		case <-c.ctx.Done():
+			return
+		default:
+			c.Publish(tags, data)
+		}
 	}()
 	return nil
 }
 
 // List requests a list from the server of the tags this client is subscribed to
 func (c *ClientConn) List() error {
-	return c.encoder.Encode(&Message{Command: "list"})
+	select {
+	case <-c.ctx.Done():
+		return nil
+	default:
+		return c.encoder.Encode(&Message{Command: "list"})
+	}
 }
 
 // listall related
 // List requests a list from the server of the tags this client is subscribed to
 func (c *ClientConn) ListAll() error {
-	return c.encoder.Encode(&Message{Command: "listall"})
+	select {
+	case <-c.ctx.Done():
+		return nil
+	default:
+		return c.encoder.Encode(&Message{Command: "listall"})
+	}
 }
 
 // who related
 // Who requests connection/subscriber stats from the server
 func (c *ClientConn) Who() error {
-	return c.encoder.Encode(&Message{Command: "who"})
+	select {
+	case <-c.ctx.Done():
+		return nil
+	default:
+		return c.encoder.Encode(&Message{Command: "who"})
+	}
 }
 
 // Close closes the client data channel and the connection to the server

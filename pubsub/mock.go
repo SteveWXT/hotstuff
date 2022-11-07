@@ -51,7 +51,7 @@ func (c *PubSubClients) addSubscriber(host string, ctx context.Context) {
 	}
 
 	c.Conns = append(c.Conns, client)
-	client.Subscribe([]string{"topic"})
+	client.Subscribe([]string{"mock_topic"})
 	ch := client.Messages()
 
 	c.Logger.Info("A subscriber started at %v", host)
@@ -74,7 +74,7 @@ loop:
 			break loop
 		case msg := <-ch:
 			c.fakeProcess(msg.Data)
-			c.EventLoop.AddEvent(ReadMeasurementEvent{})
+			// c.EventLoop.AddEvent(ReadMeasurementEvent{})
 		}
 	}
 

@@ -52,7 +52,7 @@ func (t *ReadThroughput) InitModule(mods *modules.Core) {
 }
 
 func (t *ReadThroughput) recordRead() {
-	t.readCount++
+	t.readCount = t.readCount + 1
 }
 
 func (t *ReadThroughput) tick(tick types.TickEvent) {
